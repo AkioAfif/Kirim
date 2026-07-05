@@ -1,0 +1,29 @@
+{
+  "name": "kirim-backend",
+  "version": "1.0.0",
+  "description": "Backend API untuk proyek Kirim - APAC Stellar Hackathon 2026",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "setup:testusd": "tsx src/scripts/setup-issuer-testusd.ts",
+    "setup:usdc": "tsx src/scripts/setup-usdc-official.ts",
+    "setup:test-accounts": "tsx src/scripts/create-test-accounts.ts",
+    "check:balance": "tsx src/scripts/check-balance.ts"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^12.3.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "libsodium-wrappers": "^0.7.15"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/libsodium-wrappers": "^0.7.14",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
