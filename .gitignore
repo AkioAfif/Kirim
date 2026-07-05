@@ -1,16 +1,39 @@
-# Dependencies
-node_modules/
+# ===== Rust / Soroban =====
+target/
+**/target/
+Cargo.lock
+!contracts/**/Cargo.lock
+.soroban/
+*.wasm
+*.rs.bk
 
-# Environment Variables
+# ===== Node / Backend =====
+node_modules/
+dist/
+build/
 .env
 .env.*
 !.env.example
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Build outputs
-dist/
-build/
-*.log
-
-# OS generated files
+# ===== Editor / OS =====
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
+*.swp
+
+# ===== Antigravity / AI tooling =====
+.antigravity/
+*.log
+
+# ===== Stellar / Keys (JANGAN SAMPAI KEBOCOR) =====
+*.secret
+secrets/
+*.pem
+identity/
