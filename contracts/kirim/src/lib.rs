@@ -152,6 +152,19 @@ impl KirimContract {
             .persistent()
             .set(&DataKey::SenderDisbursements(sender.clone()), &sender_disbursements);
 
+        // Update list disbursement milik tiap recipient
+        for share in final_recipients.iter() {
+            let mut recipient_disbursements: Vec<u64> = env
+                .storage()
+                .persistent()
+                .get(&DataKey::RecipientDisbursements(share.recipient.clone()))
+                .unwrap_or(Vec::new(&env));
+            recipient_disbursements.push_back(current_id);
+            env.storage()
+                .persistent()
+                .set(&DataKey::RecipientDisbursements(share.recipient.clone()), &recipient_disbursements);
+        }
+
         // Emit events
         DisbursementCreated {
             id: current_id,
@@ -181,6 +194,14 @@ impl KirimContract {
         env.storage()
             .persistent()
             .get(&DataKey::SenderDisbursements(sender))
+            .unwrap_or(Vec::new(&env))
+    }
+
+    /// Membaca semua ID Disbursement milik recipient tertentu
+    pub fn get_disbursements_by_recipient(env: Env, recipient: Address) -> Vec<u64> {
+        env.storage()
+            .persistent()
+            .get(&DataKey::RecipientDisbursements(recipient))
             .unwrap_or(Vec::new(&env))
     }
 }

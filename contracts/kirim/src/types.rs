@@ -46,6 +46,8 @@ pub enum DataKey {
     DisbursementCount,
     /// Menyimpan daftar ID Disbursement milik seorang sender (Persistent Storage)
     SenderDisbursements(Address),
+    /// Menyimpan daftar ID Disbursement milik seorang recipient (Persistent Storage)
+    RecipientDisbursements(Address),
 }
 
 /// Error khusus untuk validasi dan alur smart contract
