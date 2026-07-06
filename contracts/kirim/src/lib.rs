@@ -2,6 +2,9 @@
 
 mod types;
 
+#[cfg(test)]
+mod test;
+
 use soroban_sdk::{contract, contractimpl, token, Address, Env, Symbol, Vec};
 use types::{
     ContractError, DataKey, Disbursement, DisbursementStatus, RecipientShare, MAX_RECIPIENTS,
