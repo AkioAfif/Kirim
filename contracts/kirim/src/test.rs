@@ -24,7 +24,6 @@ fn setup_test(
     let admin = Address::generate(env);
     let token_admin = Address::generate(env);
 
-    // Register SAC token (TESTUSD)
     let token_contract = env.register_stellar_asset_contract_v2(token_admin);
     let token_contract_id = token_contract.address();
     let token_client = token::Client::new(env, &token_contract_id);
