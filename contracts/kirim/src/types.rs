@@ -59,6 +59,8 @@ pub enum ContractError {
     Unauthorized = 5,
     TransferFailed = 6,
     AlreadyInitialized = 7,
+    NotInitialized = 8,
+    EmptyRecipients = 9,
 }
 
 /// Konstanta batas maksimal jumlah penerima (Sesuai kesepakatan di agents.md)
