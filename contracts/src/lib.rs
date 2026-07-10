@@ -5,7 +5,7 @@ mod types;
 #[cfg(test)]
 mod test;
 
-use soroban_sdk::{contract, contractevent, contractimpl, token, Address, Env, Vec};
+use soroban_sdk::{contract, contractevent, contractimpl, token, Address, Env, IntoVal, Vec};
 use types::{
     ContractError, DataKey, Disbursement, DisbursementStatus, RecipientShare, MAX_RECIPIENTS,
     PERCENTAGE_TOTAL_BPS,
@@ -183,4 +183,84 @@ impl KirimContract {
             .get(&DataKey::RecipientDisbursements(recipient))
             .unwrap_or(Vec::new(&env))
     }
+
+    pub fn deposit_to_blend(env: Env, user: Address, amount: i128) -> Result<(), ContractError> {
+        user.require_auth();
+
+        let blend_pool = Address::from_string(&soroban_sdk::String::from_str(
+            &env,
+            "CCEBVDYM32YNYCVNRXQKDFFPISJJCV557CDZEIRBEE4NCV4KHPQ44HGF",
+        ));
+        let usdc_address = Address::from_string(&soroban_sdk::String::from_str(
+            &env,
+            "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU",
+        ));
+
+        let request = BlendRequest {
+            request_type: 2, // 2 = SupplyCollateral
+            address: usdc_address,
+            amount,
+        };
+        let requests = soroban_sdk::vec![&env, request];
+
+        let args: soroban_sdk::Vec<soroban_sdk::Val> = soroban_sdk::vec![
+            &env,
+            user.clone().into_val(&env), // from
+            user.clone().into_val(&env), // spender
+            user.clone().into_val(&env), // to
+            requests.into_val(&env),     // requests
+        ];
+
+        let _: soroban_sdk::Val = env.invoke_contract(
+            &blend_pool,
+            &soroban_sdk::Symbol::new(&env, "submit"),
+            args,
+        );
+
+        Ok(())
+    }
+
+    pub fn withdraw_from_blend(env: Env, user: Address, amount: i128) -> Result<(), ContractError> {
+        user.require_auth();
+
+        let blend_pool = Address::from_string(&soroban_sdk::String::from_str(
+            &env,
+            "CCEBVDYM32YNYCVNRXQKDFFPISJJCV557CDZEIRBEE4NCV4KHPQ44HGF",
+        ));
+        let usdc_address = Address::from_string(&soroban_sdk::String::from_str(
+            &env,
+            "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU",
+        ));
+
+        let request = BlendRequest {
+            request_type: 3, // 3 = WithdrawCollateral
+            address: usdc_address,
+            amount,
+        };
+        let requests = soroban_sdk::vec![&env, request];
+
+        let args: soroban_sdk::Vec<soroban_sdk::Val> = soroban_sdk::vec![
+            &env,
+            user.clone().into_val(&env), // from
+            user.clone().into_val(&env), // spender
+            user.clone().into_val(&env), // to
+            requests.into_val(&env),     // requests
+        ];
+
+        let _: soroban_sdk::Val = env.invoke_contract(
+            &blend_pool,
+            &soroban_sdk::Symbol::new(&env, "submit"),
+            args,
+        );
+
+        Ok(())
+    }
+}
+
+#[soroban_sdk::contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BlendRequest {
+    pub request_type: u32,
+    pub address: Address,
+    pub amount: i128,
 }

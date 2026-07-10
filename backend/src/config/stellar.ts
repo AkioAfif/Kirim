@@ -1,16 +1,42 @@
 import "dotenv/config";
-import { Horizon, Asset, Networks } from "@stellar/stellar-sdk";
-import _sodium from "libsodium-wrappers";
+import { Horizon, Asset, Networks, SorobanRpc, Contract } from "@stellar/stellar-sdk";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const _sodium = require("libsodium-wrappers");
 
 // ---------------------------------------------------------------------------
 // Konfigurasi Stellar Network
 // ---------------------------------------------------------------------------
 const horizonUrl =
   process.env.HORIZON_URL ?? "https://horizon-testnet.stellar.org";
+const sorobanRpcUrl =
+  process.env.SOROBAN_RPC_URL ?? "https://soroban-testnet.stellar.org";
 
+// Horizon Server — untuk transaksi Native (On-Ramp, Off-Ramp, dll)
 export const server = new Horizon.Server(horizonUrl);
+
+// Soroban RPC Server — untuk transaksi Smart Contract (P2)
+export const sorobanServer = new SorobanRpc.Server(sorobanRpcUrl);
+
 export const NETWORK_PASSPHRASE =
   process.env.NETWORK_PASSPHRASE ?? Networks.TESTNET;
+
+// ---------------------------------------------------------------------------
+// Smart Contract Kirim (Soroban)
+// ---------------------------------------------------------------------------
+const contractId = process.env.KIRIM_CONTRACT_ID;
+if (!contractId) {
+  console.warn(
+    "⚠️  KIRIM_CONTRACT_ID belum diisi di .env — fitur Soroban (P2) tidak akan berfungsi."
+  );
+}
+export const kirimContract = contractId ? new Contract(contractId) : null;
+
+// ---------------------------------------------------------------------------
+// Blend Pool — USDC Address (untuk fitur Tabungan P1)
+// ---------------------------------------------------------------------------
+export const BLEND_USDC_ADDRESS =
+  process.env.BLEND_USDC_ADDRESS ?? "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU";
 
 // ---------------------------------------------------------------------------
 // Asset TESTUSD
@@ -23,6 +49,15 @@ if (!testusdIssuerPublicKey) {
 
 // Asset TESTUSD yang dipakai di seluruh aplikasi
 export const TESTUSD_ASSET = new Asset("TESTUSD", testusdIssuerPublicKey);
+
+// ---------------------------------------------------------------------------
+// Asset USDC (Circle Testnet)
+// ---------------------------------------------------------------------------
+// Issuer resmi USDC di Stellar Testnet. Digunakan untuk fitur Tabungan Blend.
+export const USDC_ASSET = new Asset(
+  "USDC",
+  "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+);
 
 // ---------------------------------------------------------------------------
 // Enkripsi / Dekripsi Secret Key Stellar

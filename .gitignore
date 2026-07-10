@@ -21,6 +21,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .env.testaccounts
+backend/docs/BACKEND_AGENT_SPEC.md
+backend/docs/FRONTEND_GUIDE.md
+backend/docs/PRD_Kirim_Stellar_Remittance.md
+*.exe
 
 # ===== Editor / OS =====
 .vscode/
