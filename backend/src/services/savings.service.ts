@@ -24,11 +24,11 @@ import { getEncryptedSecretKey, getWalletByUserId } from "./wallet.service.js";
 import { emitToUser } from "../config/socket.js";
 
 // ================================================================
-// Konstanta Simulasi Yield (Off-Chain Indexer)
+// Konstanta Yield (berdasarkan Blend TestnetV2 Supply APY)
 // ================================================================
-const MOCK_APY_PERCENT = 8.5;
+const BLEND_APY_PERCENT = 0.06;
 const SECONDS_IN_YEAR = 365.25 * 24 * 60 * 60; // 31,557,600 detik
-const APY_PER_SECOND = MOCK_APY_PERCENT / 100 / SECONDS_IN_YEAR;
+const APY_PER_SECOND = BLEND_APY_PERCENT / 100 / SECONDS_IN_YEAR;
 
 // ================================================================
 // Interface
@@ -64,10 +64,10 @@ async function waitForSorobanTx(hash: string): Promise<void> {
 }
 
 // ================================================================
-// depositToSavings
+// depositToSavings — ON-CHAIN via Soroban Smart Contract
 // ================================================================
 /**
- * Deposit TESTUSD ke Blend melalui Treasury Swap (2 transaksi sequential):
+ * Deposit TESTUSD ke Blend melalui Treasury Swap + Soroban (2 transaksi sequential):
  *
  * Tx1 (Classic Horizon):
  *   - Op A: User → Treasury  (kirim TESTUSD — bayar "swap")
@@ -128,12 +128,12 @@ export async function depositToSavings(
         amount: amountStr,
       })
     )
-    // Op 2: Treasury → User (XLM as substitute for USDC to bypass funding issues)
+    // Op 2: Treasury → User (USDC Blend)
     .addOperation(
       Operation.payment({
         source: treasuryPublic,
         destination: userWallet.stellar_public_key,
-        asset: Asset.native(),
+        asset: BLEND_USDC_ASSET,
         amount: amountStr,
       })
     )
@@ -151,12 +151,36 @@ export async function depositToSavings(
   // Kontrak menarik USDC dari wallet user ke Blend Pool
   // =========================================================
   console.log("[savings] Tx2: Soroban deposit_to_blend...");
-  
-  // Karena keterbatasan testnet USDC faucet, kita mock pemanggilan Soroban di sini 
-  // agar simulasi hackathon di UI tetap jalan tanpa error 400.
-  let sorobanTxHash = "mocked-soroban-hash-" + Date.now();
-  console.log(`[savings] Tx2 Soroban selesai (MOCKED): ${sorobanTxHash}`);
-  
+  const userAccount = await sorobanServer.getAccount(userWallet.stellar_public_key);
+
+  const sorobanTx = new TransactionBuilder(userAccount, {
+    fee: BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(kirimContract.call("deposit_to_blend", userScVal, amountScVal))
+    .setTimeout(30)
+    .build();
+
+  // Simulasi (WAJIB untuk Soroban)
+  const simResult = await sorobanServer.simulateTransaction(sorobanTx);
+
+  if (rpc.Api.isSimulationError(simResult)) {
+    const reason = "error" in simResult ? String(simResult.error) : "Simulasi gagal";
+    throw new Error(`Simulasi Soroban deposit_to_blend gagal: ${reason}`);
+  }
+
+  // Gabungkan resource fee & auth data
+  const preparedTx = rpc.assembleTransaction(sorobanTx, simResult as any).build();
+  preparedTx.sign(userKeypair);
+
+  // Submit ke Soroban RPC
+  const sendResult = await sorobanServer.sendTransaction(preparedTx);
+  const sorobanTxHash = sendResult.hash;
+
+  // Polling status sampai transaksi terkonfirmasi
+  await waitForSorobanTx(sorobanTxHash);
+  console.log(`[savings] Tx2 Soroban deposit_to_blend berhasil: ${sorobanTxHash}`);
+
   // Hapus secret key dari memory
   userSecretKey.replace(/./, "x");
 
@@ -191,10 +215,10 @@ export async function depositToSavings(
 }
 
 // ================================================================
-// withdrawFromSavings
+// withdrawFromSavings — ON-CHAIN via Soroban Smart Contract
 // ================================================================
 /**
- * Withdraw dari Blend melalui Treasury Swap (2 transaksi sequential):
+ * Withdraw dari Blend melalui Soroban + Treasury Swap (2 transaksi sequential):
  *
  * Tx1 (Soroban):
  *   - withdraw_from_blend(user, amount): Blend Pool mengembalikan USDC ke User
@@ -252,11 +276,35 @@ export async function withdrawFromSavings(
   // TX1: Soroban — withdraw_from_blend(user, amount)
   // =========================================================
   console.log("[savings] Tx1: Soroban withdraw_from_blend...");
-  
-  // Karena keterbatasan testnet USDC faucet, kita mock pemanggilan Soroban di sini 
-  // agar simulasi hackathon di UI tetap jalan tanpa error 400.
-  let sorobanTxHash = "mocked-soroban-hash-" + Date.now();
-  console.log(`[savings] Tx1 Soroban selesai (MOCKED): ${sorobanTxHash}`);
+  const userAccount = await sorobanServer.getAccount(userWallet.stellar_public_key);
+
+  const sorobanTx = new TransactionBuilder(userAccount, {
+    fee: BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(kirimContract.call("withdraw_from_blend", userScVal, amountScVal))
+    .setTimeout(30)
+    .build();
+
+  // Simulasi (WAJIB untuk Soroban)
+  const simResult = await sorobanServer.simulateTransaction(sorobanTx);
+
+  if (rpc.Api.isSimulationError(simResult)) {
+    const reason = "error" in simResult ? String(simResult.error) : "Simulasi gagal";
+    throw new Error(`Simulasi Soroban withdraw_from_blend gagal: ${reason}`);
+  }
+
+  // Gabungkan resource fee & auth data
+  const preparedTx = rpc.assembleTransaction(sorobanTx, simResult as any).build();
+  preparedTx.sign(userKeypair);
+
+  // Submit ke Soroban RPC
+  const sendResult = await sorobanServer.sendTransaction(preparedTx);
+  const sorobanTxHash = sendResult.hash;
+
+  // Polling status sampai transaksi terkonfirmasi
+  await waitForSorobanTx(sorobanTxHash);
+  console.log(`[savings] Tx1 Soroban withdraw_from_blend berhasil: ${sorobanTxHash}`);
 
   // =========================================================
   // TX2: Classic Swap — USDC → Treasury, TESTUSD → User
@@ -268,12 +316,12 @@ export async function withdrawFromSavings(
     fee: BASE_FEE,
     networkPassphrase: NETWORK_PASSPHRASE,
   })
-    // Op A: User → Treasury (XLM as substitute for USDC)
+    // Op A: User → Treasury (USDC Blend)
     .addOperation(
       Operation.payment({
         source: userWallet.stellar_public_key,
         destination: treasuryPublic,
-        asset: Asset.native(),
+        asset: BLEND_USDC_ASSET,
         amount: amountStr,
       })
     )
@@ -344,7 +392,7 @@ export async function getSavingsPosition(
     amountDeposited,
     currentValue: parseFloat(currentValue.toFixed(7)),
     yieldEarned: parseFloat(yieldEarned.toFixed(7)),
-    apyPercentage: MOCK_APY_PERCENT,
+    apyPercentage: BLEND_APY_PERCENT,
     depositedAt: position.deposited_at,
     onChain: true,
   };

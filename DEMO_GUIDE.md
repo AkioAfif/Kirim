@@ -41,7 +41,7 @@ Jika ini adalah lingkungan *testnet* baru, ikuti langkah ini:
      npm run setup:testusd
      ```
 
-*(Catatan: Saat ini, fitur deposit Tabungan Blend di-*mock* sementara menggunakan XLM di belakang layar sebagai cadangan untuk mengatasi ketiadaan Faucet USDC testnet. Jadi pastikan dompet Treasury memiliki saldo XLM yang cukup dari Stellar Laboratory Faucet).*
+*(Catatan: Pastikan dompet Treasury memiliki saldo USDC (Blend Testnet) yang cukup. USDC dapat diperoleh dari faucet di [testnet.blend.capital](https://testnet.blend.capital) — klik tombol "receive assets for Blend test network". Treasury juga memerlukan saldo XLM dari Stellar Laboratory Faucet untuk membayar biaya transaksi).*
 
 ---
 
@@ -83,7 +83,7 @@ Saat mempresentasikan aplikasi Kirim, ikuti alur skenario berikut agar juri dapa
 - Buka tab **Tabungan Blend**.
 - Masukkan sebagian dari saldo TESTUSD yang baru saja di-*top up*.
 - Klik **Deposit**.
-- **Poin Demo:** Jelaskan bahwa uang pengguna kini diputar di protokol DeFi sesungguhnya (Blend Protocol) untuk mendapatkan bunga *real-time* (~8.5% APY) secara *on-chain*, namun pengalaman UI tetap se-simpel aplikasi perbankan biasa.
+- **Poin Demo:** Jelaskan bahwa uang pengguna kini diputar di protokol DeFi sesungguhnya (Blend Protocol) untuk mendapatkan bunga *real-time* (~0.06% APY) secara *on-chain*, namun pengalaman UI tetap se-simpel aplikasi perbankan biasa. Transaksi deposit dan withdraw sepenuhnya terjadi *on-chain* melalui *Smart Contract* Soroban.
 
 ### Langkah D: Mengirim Uang Lintas Negara
 - Buka tab **Kirim**.

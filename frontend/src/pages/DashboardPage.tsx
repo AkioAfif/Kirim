@@ -467,7 +467,7 @@ function TabunganTab({ addToast, onSuccess }: { addToast: (msg: string, type: To
           <span>Blend Protocol — On-Chain</span>
         </div>
         <div className="blend-apy">
-          APY <strong>{position?.apyPercentage ?? 8.5}%</strong>
+          APY <strong>{position?.apyPercentage ?? 0.06}%</strong>
         </div>
       </div> */}
 
@@ -508,7 +508,7 @@ function TabunganTab({ addToast, onSuccess }: { addToast: (msg: string, type: To
             <IconZzz />
              No active savings.
           </p>
-          <p className="form-hint">Deposit TESTUSD/USDC to Blend and earn <strong>8.5% APY</strong></p>
+          <p className="form-hint">Deposit TESTUSD/USDC to Blend and earn <strong>0.06% APY</strong></p>
         </div>
       )}
 

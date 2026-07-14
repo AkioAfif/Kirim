@@ -338,7 +338,7 @@ function FeaturesSection() {
     {
       icon: 'IconPigMoney',
       title: 'Idle Funds? Earn Yield',
-      body: 'Uncashed funds can be put to work on Blend Protocol, earning up to 8.5% APY in interest.',
+      body: 'Uncashed funds can be put to work on Blend Protocol, earning up to 0.06% APY in interest.',
       tag: 'Blend Protocol',
     },
     {
